@@ -39,9 +39,9 @@ In your `Nargo.toml` file, add the dependency as you need:
 
 ```toml
 [dependencies]
-bigint = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/biguint" }
-curves = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/curves" }
-field = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/primefield" }
+bigint = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", directory = "crates/biguint" }
+curves = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", directory = "crates/curves" }
+field = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", directory = "crates/primefield" }
 ```
 
 ## Testing
