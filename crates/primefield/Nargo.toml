@@ -1,0 +1,8 @@
+[package]
+name = "primefield"
+authors = [""]
+type = "lib"
+compiler_version = ">=0.22.0"
+
+[dependencies]
+biguint = { path = "../biguint" }
