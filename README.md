@@ -1,5 +1,8 @@
 # Noir BigInt
 
+## Note
+This library is ported from https://github.com/shuklaayush/noir-bigint.
+
 [![CI][ci-shield]][ci-url]
 [![MIT License][license-shield]][license-url]
 
@@ -32,11 +35,13 @@ This crate contains examples of the `secp256k1` and the `ed25519` curves impleme
 
 ## Installation
 
-In your `Nargo.toml` file, add the following dependency:
+In your `Nargo.toml` file, add the dependency as you need:
 
 ```toml
 [dependencies]
-noir_bigint = { tag = "v0.1.0", git = "https://github.com/shuklaayush/noir-bigint" }
+bigint = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/biguint" }
+curves = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/curves" }
+field = { tag = "v0.1.0", git = "https://github.com/RajeshRk18/noir_crypto", path = "crates/primefield" }
 ```
 
 ## Testing
@@ -67,8 +72,8 @@ Contributions are welcome! Please adhere to the following guidelines:
 
 This is **experimental software** and is provided on an "as is" and "as available" basis. We **do not give any warranties** and **will not be liable for any losses** incurred through any use of this code base.
 
-[ci-shield]: https://img.shields.io/github/actions/workflow/status/shuklaayush/noir-bigint/test.yaml?branch=main&label=tests
-[ci-url]: https://github.com/shuklaayush/noir-bigint/actions/workflows/test.yaml
+[ci-shield]: https://img.shields.io/github/actions/workflow/status/RajeshRk18/noir_crypto/test.yaml?branch=main&label=tests
+[ci-url]: https://github.com/RajeshRk18/noir_crypto/actions/workflows/test.yaml
 
 [license-shield]: https://img.shields.io/badge/License-MIT-green.svg
-[license-url]: https://github.com/shuklaayush/noir-bigint/blob/main/LICENSE
+[license-url]: https://github.com/RajeshRk18/noir_crypto/blob/main/LICENSE
