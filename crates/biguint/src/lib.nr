@@ -50,22 +50,26 @@ impl BigUint56 {
 
     /// Constructs a BigUint56 from a byte array in little-endian format.
     pub fn from_bytes(bytes: [u8]) -> Self {
+        let bytes_len = bytes.len() as u56;
+
         // TODO: Do I need this check?
-        assert(bytes.len() as u56 <= MAX_BYTES as u56);
+        assert(bytes_len as u56 <= MAX_BYTES as u56);
 
         let mut res = BigUint56::zero();
-        for i in 0..bytes.len() {
+        for i in 0..MAX_BYTES {
+            if i as u56 < bytes_len as u56 {
             let limb_index = (i as u56) / (BYTES_PER_LIMB as u56);
             let byte_index = (i as u56) % (BYTES_PER_LIMB as u56);
 
             res.limbs[limb_index as Field] |= (bytes[i] as u56) << (byte_index * 8);
+            }
         }
 
         res
     }
 
     /// Returns the little-endian byte array representation of the BigUint56.
-    fn to_bytes(self: Self) -> [u8; MAX_BYTES] {
+    pub fn to_bytes(self: Self) -> [u8; MAX_BYTES] {
         let mut res = [0 as u8; MAX_BYTES];
 
         for i in 0..NUM_LIMBS {
@@ -80,7 +84,7 @@ impl BigUint56 {
     }
 
     /// Returns the bit array representation of the BigUint56, with LSB at index 0.
-    fn to_bits(self: Self) -> [u1; MAX_BITS] {
+    pub fn to_bits(self: Self) -> [u1; MAX_BITS] {
         let mut res = [0 as u1; MAX_BITS];
 
         for i in 0..NUM_LIMBS {
@@ -96,7 +100,7 @@ impl BigUint56 {
 
     /// Adds two BigUint56 numbers with carry.
     /// Returns a tuple containing the result and the carry.
-    fn adc(self: Self, other: Self) -> (Self, u56) {
+    pub fn adc(self: Self, other: Self) -> (Self, u56) {
         let mut res = BigUint56::zero();
         let mut carry = 0 as u56;
 
@@ -111,7 +115,7 @@ impl BigUint56 {
 
     /// Adds two BigUint56 instances without returning the carry.
     // TODO: Check if carry is 0?
-    fn add(self: Self, other: Self) -> Self {
+    pub fn add(self: Self, other: Self) -> Self {
         let (res, _carry) = self.adc(other);
         res
     }
@@ -133,14 +137,14 @@ impl BigUint56 {
 
     /// Subtracts two BigUint56 instances without returning the borrow.
     // TODO: Check if borrow is 0?
-    fn sub(self: Self, other: Self) -> Self {
+    pub fn sub(self: Self, other: Self) -> Self {
         let (res, _borrow) = self.sbb(other);
         res
     }
 
     /// Multiplies two BigUint56 instances using long multiplication.
     /// Returns a tuple containing the lower and higher parts of the multiplication result.
-    fn mul(self: Self, other: Self) -> (Self, Self) {
+    pub fn mul(self: Self, other: Self) -> (Self, Self) {
         let mut lo = BigUint56::zero();
         let mut hi = BigUint56::zero();
 
@@ -189,14 +193,14 @@ impl BigUint56 {
     }
 
     /// Shifts the BigUint56 instance to the left by 1 bit.
-    fn shl1(self: Self) -> Self {
+    pub fn shl1(self: Self) -> Self {
         let (res, _carry) = self.shl_limb(1);
         res
     }
 
     /// Shifts the BigUint56 instance to the left by a specified number of bits `n`.
     // TODO: Should I return early if n == 0?
-    fn shl(self: Self, n: u56) -> Self {
+    pub fn shl(self: Self, n: u56) -> Self {
         let mut res = BigUint56::zero();
 
         if n < MAX_BITS as u56 {
@@ -222,7 +226,7 @@ impl BigUint56 {
     /// Shifts the BigUint56 instance to the right by a specified number of bits `n`.
     /// where `0 <= n < Limb::BITS`,
     // TODO: Should I return early if n == 0?
-    fn shr_limb(self: Self, n: u56) -> Self {
+    pub fn shr_limb(self: Self, n: u56) -> Self {
         assert(n < BITS_PER_LIMB as u56);
 
         let mut res = self;
@@ -240,14 +244,14 @@ impl BigUint56 {
     }
 
     /// Shifts the BigUint56 instance to the right by 1 bit.
-    fn shr1(self: Self) -> Self {
+    pub fn shr1(self: Self) -> Self {
         let res = self.shr_limb(1);
         res
     }
 
     /// Shifts the BigUint56 instance to the right by a specified number of bits.
     // TODO: Should I return early if n == 0?
-    fn shr(self: Self, n: u56) -> Self {
+    pub fn shr(self: Self, n: u56) -> Self {
         let mut res = BigUint56::zero();
 
         if n < MAX_BITS as u56 {
@@ -268,7 +272,7 @@ impl BigUint56 {
     }
 
     /// Returns the number of bits needed to represent the BigUint56 instance.
-    fn nbits(self: Self) -> u56 {
+    pub fn nbits(self: Self) -> u56 {
         let bits = BigUint56::to_bits(self);
         let mut res = 0;
         let mut done = false;
@@ -288,7 +292,7 @@ impl BigUint56 {
     /// Divides the BigUint56 instance by another, returning the quotient and remainder using long division.
     // WARNING: This is a simple binary long division. More efficient algorithms should be considered.
     // TODO: Maybe https://github.com/okuyiga/noir-bigint/blob/d60cc5246c8b0d175c4d6b1f4aaceed7fb725695/bigint/src/division.nr
-    fn div(self: Self, other: Self) -> (Self, Self) {
+    pub fn div(self: Self, other: Self) -> (Self, Self) {
         assert(!other.is_zero());
 
         if self.lt(other) {
@@ -317,7 +321,7 @@ impl BigUint56 {
     }
 
     /// Checks if the two BigUint56 instances are equal.
-    fn eq(self: Self, other: Self) -> bool {
+    pub fn eq(self: Self, other: Self) -> bool {
         let mut is_eq = true;
         for i in 0..NUM_LIMBS {
             is_eq = is_eq & (self.limbs[i] == other.limbs[i]);
@@ -326,29 +330,29 @@ impl BigUint56 {
     }
 
     /// Checks if the BigUint56 instance is greater than or equal to another.
-    fn gte(self: Self, other: Self) -> bool {
+    pub fn gte(self: Self, other: Self) -> bool {
         let (_diff, borrow) = self.sbb(other);
         borrow == 0
     }
 
     /// Checks if the BigUint56 instance is strictly greater than another.
-    fn gt(self: Self, other: Self) -> bool {
+    pub fn gt(self: Self, other: Self) -> bool {
         let (diff, borrow) = self.sbb(other);
         (borrow == 0) & !diff.eq(BigUint56::zero())
     }
 
     /// Checks if the BigUint56 instance is less than or equal to another.
-    fn lte(self: Self, other: Self) -> bool {
+    pub fn lte(self: Self, other: Self) -> bool {
         other.gte(self)
     }
 
     /// Checks if the BigUint56 instance is strictly less than another.
-    fn lt(self: Self, other: Self) -> bool {
+    pub fn lt(self: Self, other: Self) -> bool {
         other.gt(self)
     }
 
     /// Checks if the BigUint56 instance is zero.
-    fn is_zero(self: Self) -> bool {
+    pub fn is_zero(self: Self) -> bool {
         self.eq(BigUint56::zero())
     }
 
@@ -373,7 +377,7 @@ impl BigUint56 {
     // fn mul_mod(self: Self, other: Self, modulus: Self)
 
     // Prints the BigUint56 instance as a byte array.
-    fn println(self: Self) {
+    pub fn println(self: Self) {
         let bytes = self.to_bytes();
         println(bytes);
     }

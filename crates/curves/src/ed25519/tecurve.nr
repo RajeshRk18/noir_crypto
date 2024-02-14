@@ -21,17 +21,17 @@ struct Curve { // Twisted Edwards curve
 }
 
 impl Point {
-    fn from_affine(x: Fp, y: Fp) -> Self {
+    pub fn from_affine(x: Fp, y: Fp) -> Self {
         Self {x, y, t: x.mul(y), z: Fp::one()}
     }
 
     // Additive identity
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Self { x: Fp::zero(), y: Fp::one(), t: Fp::zero(), z: Fp::one() }
     }
 
     // Check for equality
-    fn eq(self, p: Point) -> bool {
+    pub fn eq(self, p: Point) -> bool {
         let Self {x: x1, y: y1, t: _t1, z: z1} = self;
         let Self {x: x2, y: y2, t: _t2, z:z2} = p;
 
@@ -39,14 +39,14 @@ impl Point {
     }
 
     // Check if zero
-    fn is_zero(self) -> bool {
+    pub fn is_zero(self) -> bool {
         let Self {x, y, t: _t, z} = self;
 
         x.is_zero() & y.eq(z)
     }
 
     // Negation
-    fn negate(self) -> Self {
+    pub fn negate(self) -> Self {
         let Self {x, y, t, z} = self;
 
         Self { x: x.neg(), y, t: t.neg(), z }
@@ -54,7 +54,7 @@ impl Point {
     
     // Convert to affine coordinates
     // TODO: Create struct
-    fn to_affine(self) -> (Fp, Fp) {
+    pub fn to_affine(self) -> (Fp, Fp) {
         let zinv = self.z.invert();
 
         let x = self.x.mul(zinv);
@@ -64,7 +64,7 @@ impl Point {
     }
 
     // Print as bytes
-    fn println(self: Self) {
+    pub fn println(self: Self) {
         self.x.println();
         self.y.println();
         self.t.println();
@@ -72,7 +72,7 @@ impl Point {
     }
 
     // Print as bytes
-    fn println_affine(self: Self) {
+    pub fn println_affine(self: Self) {
         let (x, y) = self.to_affine();
         
         x.println();
@@ -80,10 +80,9 @@ impl Point {
     }
 }
 
-
 impl Curve {
     // Curve constructor
-    fn new(a: Fp, d: Fp, gen: Point) -> Curve {
+    pub(crate) fn new(a: Fp, d: Fp, gen: Point) -> Curve {
         // Check curve coefficients
         assert(!a.is_zero());
         assert(!d.is_zero());
@@ -98,7 +97,7 @@ impl Curve {
     }
 
     // Membership check
-    fn contains(self, p: Point) -> bool {
+    pub fn contains(self, p: Point) -> bool {
         let Point {x, y, t, z} = p;
 
         if z.is_zero() | !z.mul(t).eq(x.mul(y)) {
@@ -113,7 +112,7 @@ impl Curve {
     }
 
     // Point addition
-    fn add(self, p1: Point, p2: Point) -> Point {
+    pub fn add(self, p1: Point, p2: Point) -> Point {
         let Point{x: x1, y: y1, t: t1, z: z1} = p1;
         let Point{x: x2, y: y2, t: t2, z: z2} = p2;
 
@@ -138,12 +137,12 @@ impl Curve {
     }
 
     // Point subtraction
-    fn sub(self, p1: Point, p2: Point) -> Point {
+    pub fn sub(self, p1: Point, p2: Point) -> Point {
         self.add(p1, p2.negate())
     }
 
     // Point doubling
-    fn double(self, p: Point) -> Point {
+    pub fn double(self, p: Point) -> Point {
         let Point{x: x1, y: y1, t: _t1, z: z1} = p;
 
         let a = x1.square();
@@ -168,7 +167,7 @@ impl Curve {
 
     // Scalar multiplication with scalar represented by a bit array (little-endian convention).
     // If k is the natural number represented by `bits`, then this computes p + ... + p k times.
-    fn bit_mul<N>(self, bits: [u1; N], p: Point) -> Point {
+    pub fn bit_mul<N>(self, bits: [u1; N], p: Point) -> Point {
         let mut out = Point::zero();
         
         for i in 0..N {
@@ -186,7 +185,7 @@ impl Curve {
     }
     
     // Scalar multiplication (p + ... + p n times)
-    fn mul(self, n: Fq, p: Point) -> Point {
+    pub fn mul(self, n: Fq, p: Point) -> Point {
         let n_as_bits = n.to_bits();
         self.bit_mul(n_as_bits, p)
     }
