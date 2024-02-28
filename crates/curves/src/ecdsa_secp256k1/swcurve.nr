@@ -100,7 +100,6 @@ impl Point {
     }
 }
 
-
 impl Curve {
     // Curve constructor
     fn new(a: Fp, b: Fp, gen: Point) -> Curve {
