@@ -57,22 +57,36 @@ pub fn ed25519() -> Ed25519 {
 }
 
 // TODO: Check if sig_s < L?
-pub fn verify_signature(pubkey: Point, sig_R: Point, sig_s: Fq, msghash: Fq) -> bool {
+pub fn verify_signature(pubkey: Point, sig_R: Point, sig_S: Fq, msghash: Fq) -> bool {
+    assert(sig_required_checks(pubkey, sig_R, sig_S));
+
+    compute_result(pubkey, sig_R, sig_S, msghash).is_zero()
+}
+
+unconstrained fn compute_result(pubkey: Point, sig_R: Point, sig_S: Fq, msghash: Fq) -> Point {
     let Ed25519 { curve, cofactor } = ed25519();
 
+    let R_prime = curve.sub(curve.mul(sig_S, curve.gen), curve.mul(msghash, pubkey));
+    curve.mul(cofactor, curve.sub(sig_R, R_prime))
+}
+
+unconstrained fn sig_required_checks(pubkey: Point, sig_R: Point, sig_S: Fq) -> bool {
+    let mut pass_check = true;
+
+    let Ed25519 { curve, cofactor: _cofactor } = ed25519();
+
     // pubkey membership check
-    assert(!pubkey.is_zero());
-    assert(curve.contains(pubkey));
+    pass_check &= (!pubkey.is_zero());
+    pass_check &= curve.contains(sig_R);
 
     // sig_R membership check
-    assert(!sig_R.is_zero());
-    assert(curve.contains(sig_R));
+    pass_check &= (!sig_R.is_zero());
+    pass_check &= (curve.contains(sig_R));
 
     // sig_s non-zero check
-    assert(!sig_s.is_zero());
+    pass_check &= (!sig_S.is_zero());
 
-    let R_prime = curve.sub(curve.mul(sig_s, curve.gen), curve.mul(msghash, pubkey));
-    curve.mul(cofactor, curve.sub(sig_R, R_prime)).is_zero()
+    pass_check
 }
 
 #[test]

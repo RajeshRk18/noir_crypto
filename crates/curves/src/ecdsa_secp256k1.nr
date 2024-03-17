@@ -40,14 +40,18 @@ pub fn secp256k1() -> Secp256k1 {
     }
 }
 
-pub fn verify_signature(pubkey: Point, sig_r: Fq, sig_s: Fq, msghash: Fq) -> bool {
+pub fn verify_signature(pubkey: Point, sig_R: Fq, sig_S: Fq, msghash: Fq) -> bool {
+    assert(sig_required_checks(pubkey, sig_R, sig_S));
+
+    let xq = compute_lhs(pubkey, sig_R, sig_S, msghash);
+
+    xq.eq(sig_R)
+}
+
+// This heavy computation is offloaded to unconstrained function.
+// We just constrain the output
+unconstrained fn compute_lhs(pubkey: Point, sig_r: Fq, sig_s: Fq, msghash: Fq) -> Fq {
     let Secp256k1 { curve } = secp256k1();
-
-    assert(!pubkey.is_zero());
-    assert(curve.contains(pubkey));
-
-    assert(!sig_r.is_zero());
-    assert(!sig_s.is_zero());
 
     let s_inv = sig_s.invert();
     let you1 = msghash.mul(s_inv);
@@ -61,7 +65,25 @@ pub fn verify_signature(pubkey: Point, sig_r: Fq, sig_s: Fq, msghash: Fq) -> boo
     let x = sum.to_affine().0;
     let xq = Fq::from_biguint56(x.to_biguint56());
 
-    sig_r.eq(xq)
+    xq
+}
+
+unconstrained fn sig_required_checks(pubkey: Point, sig_R: Fq, sig_S: Fq) -> bool {
+    let mut pass_check = true;
+
+    let Secp256k1 { curve } = secp256k1();
+
+    // public key membership check
+    pass_check &= (!pubkey.is_zero());
+    pass_check &= curve.contains(pubkey);
+
+    // sig_R non-zero check
+    pass_check &= (!sig_R.is_zero());
+
+    // sig_s non-zero check
+    pass_check &= (!sig_S.is_zero());
+
+    pass_check
 }
 
 #[test]
